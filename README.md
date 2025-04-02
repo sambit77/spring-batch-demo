@@ -20,6 +20,6 @@ This application demonstrates spring batch operation by reading a .csv file and 
 
 ![Spring Batch Architecture](architecture.png)
 
-###### branch-main
+###### branch-skip-policy
 
-Simple spring batch configuration (sequential execution)
+(Implements fault tolerance strategy for bad input data using skip policy)

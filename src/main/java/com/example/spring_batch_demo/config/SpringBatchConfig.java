@@ -11,6 +11,7 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.file.FlatFileParseException;
 import org.springframework.batch.item.file.LineMapper;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
@@ -44,7 +45,7 @@ public class SpringBatchConfig {
     public FlatFileItemReader<Employee> reader()
     {
         FlatFileItemReader<Employee> itemReader = new FlatFileItemReader<>();
-        itemReader.setResource(new FileSystemResource("src/main/resources/employee_data.csv")); //set the path for input file
+        itemReader.setResource(new FileSystemResource("src/main/resources/employee_data_2.csv")); //set the path for input file
         itemReader.setName("employeeReader"); //setting reader component name
         itemReader.setLinesToSkip(1); //how many lines to skip from top
         itemReader.setLineMapper(lineMapper());
@@ -88,6 +89,9 @@ public class SpringBatchConfig {
                 .reader(reader())
                 .processor(processor())
                 .writer(writer())
+                .faultTolerant()
+                .skip(FlatFileParseException.class)
+                .skipLimit(2)
                 .build();
     }
 
