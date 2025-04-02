@@ -2,9 +2,11 @@ package com.example.spring_batch_demo.config;
 
 import com.example.spring_batch_demo.component.EmployeeProcessor;
 import com.example.spring_batch_demo.component.EmployeeWriter;
+import com.example.spring_batch_demo.component.listener.CustomSkipListener;
 import com.example.spring_batch_demo.component.policy.CustomSkipPolicy;
 import com.example.spring_batch_demo.entity.Employee;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.SkipListener;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -96,6 +98,7 @@ public class SpringBatchConfig {
                 //.skipLimit(2)
                 //.noSkip(FlatFileParseException.class)
                 .skipPolicy(skipPolicy())
+                .listener(skipListener())
                 .build();
     }
 
@@ -155,6 +158,12 @@ public class SpringBatchConfig {
     public SkipPolicy skipPolicy()
     {
         return  new CustomSkipPolicy();
+    }
+
+    @Bean
+    public SkipListener skipListener()
+    {
+        return new CustomSkipListener();
     }
 
 }

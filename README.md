@@ -20,8 +20,10 @@ This application demonstrates spring batch operation by reading a .csv file and 
 
 ![Spring Batch Architecture](architecture.png)
 
-###### branch-skip-policy
+###### branch-skip-listeners
 
 (Implements fault tolerance strategy for bad input data using skip policy) <br>
+Define a listener for skip to perform any intimidation task such as logging the error out data  <br>
 
-Define a CustomSkipPolicy class and attach it to a step so that whenever a particular exception is triggered this skipPolicy is applied (skipPolicy contains the logic based on which skip will happen it can be skipCount , exception type etc)
+Define a CustomSkipPolicy class and attach it to a step so that whenever a particular exception is triggered this skipPolicy is applied (skipPolicy contains the logic based on which skip will happen it can be skipCount , exception type etc). Post this define a 
+CustomSkipListener class and log the errors there and attach this listener to the step. 
