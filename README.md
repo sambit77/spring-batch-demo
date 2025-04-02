@@ -19,3 +19,7 @@ This application demonstrates spring batch operation by reading a .csv file and 
 5. Create a JobLauncher to launch the job (In this app its an api endpoint that triggers batch run).
 
 ![Spring Batch Architecture](architecture.png)
+
+###### branch-main
+
+Simple spring batch configuration (sequential execution)
