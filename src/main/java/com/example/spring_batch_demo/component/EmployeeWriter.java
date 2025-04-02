@@ -22,7 +22,7 @@ public class EmployeeWriter implements ItemWriter<Employee> {
     public void write(Chunk<? extends Employee> chunk) throws Exception {
 
         System.out.println("Thread name: " + Thread.currentThread().getName());
-        System.out.println(chunk.getItems().toString());
+        //System.out.println(chunk.getItems().toString());
         employeeRepository.saveAll(chunk.getItems());
 
 
