@@ -22,4 +22,6 @@ This application demonstrates spring batch operation by reading a .csv file and 
 
 ###### branch-skip-policy
 
-(Implements fault tolerance strategy for bad input data using skip policy)
+(Implements fault tolerance strategy for bad input data using skip policy) <br>
+
+Define a CustomSkipPolicy class and attach it to a step so that whenever a particular exception is triggered this skipPolicy is applied (skipPolicy contains the logic based on which skip will happen it can be skipCount , exception type etc)

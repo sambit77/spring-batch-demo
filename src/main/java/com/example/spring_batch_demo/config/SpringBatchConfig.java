@@ -2,6 +2,7 @@ package com.example.spring_batch_demo.config;
 
 import com.example.spring_batch_demo.component.EmployeeProcessor;
 import com.example.spring_batch_demo.component.EmployeeWriter;
+import com.example.spring_batch_demo.component.policy.CustomSkipPolicy;
 import com.example.spring_batch_demo.entity.Employee;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -10,6 +11,7 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.core.step.skip.SkipPolicy;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.FlatFileParseException;
 import org.springframework.batch.item.file.LineMapper;
@@ -45,7 +47,7 @@ public class SpringBatchConfig {
     public FlatFileItemReader<Employee> reader()
     {
         FlatFileItemReader<Employee> itemReader = new FlatFileItemReader<>();
-        itemReader.setResource(new FileSystemResource("src/main/resources/employee_data_2.csv")); //set the path for input file
+        itemReader.setResource(new FileSystemResource("src/main/resources/employee_data.csv")); //set the path for input file
         itemReader.setName("employeeReader"); //setting reader component name
         itemReader.setLinesToSkip(1); //how many lines to skip from top
         itemReader.setLineMapper(lineMapper());
@@ -90,8 +92,10 @@ public class SpringBatchConfig {
                 .processor(processor())
                 .writer(writer())
                 .faultTolerant()
-                .skip(FlatFileParseException.class)
-                .skipLimit(2)
+                .skip(FlatFileParseException.class) //skip a particular exception * skip limit times
+                //.skipLimit(2)
+                //.noSkip(FlatFileParseException.class)
+                .skipPolicy(skipPolicy())
                 .build();
     }
 
@@ -145,6 +149,12 @@ public class SpringBatchConfig {
         dataSourceInitializer.setDatabasePopulator(databasePopulator);
 
         return dataSourceInitializer;
+    }
+
+    @Bean
+    public SkipPolicy skipPolicy()
+    {
+        return  new CustomSkipPolicy();
     }
 
 }
