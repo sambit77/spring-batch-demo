@@ -20,6 +20,10 @@ This application demonstrates spring batch operation by reading a .csv file and 
 
 ![Spring Batch Architecture](architecture.png)
 
-###### branch-main
+###### branch-partitioning
 
-Simple spring batch configuration (sequential execution)
+Configure partitioning of input :- </br>
+
+1. Define a CustomPartitioner class containing partitioning logic
+2. Define partitioner, partitionHandler and TaskExecutor in SpringBatchConfig
+3. Define master and slave steps , (Master step is responsible for creating partitions and slave step is the actual batch processing logic applied on each partition using reader, processor and writers )

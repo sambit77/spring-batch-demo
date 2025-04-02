@@ -3,10 +3,13 @@ package com.example.spring_batch_demo.config;
 import com.example.spring_batch_demo.component.EmployeeProcessor;
 import com.example.spring_batch_demo.component.EmployeeWriter;
 import com.example.spring_batch_demo.entity.Employee;
+import com.example.spring_batch_demo.partition.CustomPartitioner;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.partition.PartitionHandler;
+import org.springframework.batch.core.partition.support.TaskExecutorPartitionHandler;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
 import org.springframework.batch.core.step.builder.StepBuilder;
@@ -21,10 +24,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.init.DataSourceInitializer;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -80,11 +85,30 @@ public class SpringBatchConfig {
         return new EmployeeWriter();
     }
 
-    @Bean
+    /*@Bean
     @Transactional
     public Step step1(JobRepository jobRepository, PlatformTransactionManager transactionManager)
     {
         return  new StepBuilder("step1",jobRepository).<Employee,Employee> chunk(10,transactionManager)
+                .reader(reader())
+                .processor(processor())
+                .writer(writer())
+                .build();
+    }*/
+
+    // defining master step - it will first create the partitions and then send the process to slave step simultaneously
+    @Bean
+    public Step masterStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
+        return new StepBuilder("masterStep", jobRepository)
+                .partitioner(slaveStep1(jobRepository, transactionManager).getName(), partitioner())
+                .partitionHandler(partitionHandler(jobRepository, transactionManager))
+                .build();
+    }
+
+
+    @Bean
+    public Step slaveStep1(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
+        return new StepBuilder("slaveStep1", jobRepository).<Employee, Employee> chunk(10, transactionManager) // means 1 chunk is of 10 size
                 .reader(reader())
                 .processor(processor())
                 .writer(writer())
@@ -96,7 +120,7 @@ public class SpringBatchConfig {
     {
         return new JobBuilder("importEmployeeFromCSVToDB",jobRepository)
                 .preventRestart() //set flag to prevent re execution
-                .start(step1(jobRepository,platformTransactionManager))//start step-1
+                .start(masterStep(jobRepository,platformTransactionManager))//start step-1
                 //.next(nextStep) //to call next steps
                 .build();
     }
@@ -141,6 +165,30 @@ public class SpringBatchConfig {
         dataSourceInitializer.setDatabasePopulator(databasePopulator);
 
         return dataSourceInitializer;
+    }
+
+    @Bean
+    public CustomPartitioner partitioner() {
+        return new CustomPartitioner();
+    }
+
+    public PartitionHandler partitionHandler(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
+        TaskExecutorPartitionHandler taskExecutorPartitionHandler = new TaskExecutorPartitionHandler();
+        taskExecutorPartitionHandler.setGridSize(2); // it will create 2 partition of 1-500 and 501 to 1000
+        taskExecutorPartitionHandler.setTaskExecutor(taskExecutor());
+        taskExecutorPartitionHandler.setStep(slaveStep1(jobRepository, transactionManager));
+
+        return taskExecutorPartitionHandler;
+    }
+
+    @Bean
+    public TaskExecutor taskExecutor() {
+        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+        taskExecutor.setMaxPoolSize(4);
+        taskExecutor.setCorePoolSize(4);
+        taskExecutor.setQueueCapacity(4);
+
+        return taskExecutor;
     }
 
 }
