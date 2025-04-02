@@ -21,6 +21,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.init.DataSourceInitializer;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
@@ -88,6 +90,7 @@ public class SpringBatchConfig {
                 .reader(reader())
                 .processor(processor())
                 .writer(writer())
+                .taskExecutor(taskExecutor())
                 .build();
     }
 
@@ -141,6 +144,14 @@ public class SpringBatchConfig {
         dataSourceInitializer.setDatabasePopulator(databasePopulator);
 
         return dataSourceInitializer;
+    }
+
+    @Bean
+    public TaskExecutor taskExecutor()
+    {
+        SimpleAsyncTaskExecutor simpleAsyncTaskExecutor = new SimpleAsyncTaskExecutor();
+        simpleAsyncTaskExecutor.setConcurrencyLimit(10); // 10 threads will process the data concurrently
+        return simpleAsyncTaskExecutor;
     }
 
 }

@@ -19,3 +19,19 @@ This application demonstrates spring batch operation by reading a .csv file and 
 5. Create a JobLauncher to launch the job (In this app its an api endpoint that triggers batch run).
 
 ![Spring Batch Architecture](architecture.png)
+
+###### Branch- parallel-processing
+
+Add a taskExecutor to Step bean to enable parallel processing of steps
+
+taskExecutor bean definition 
+```shell
+@Bean
+    public TaskExecutor taskExecutor()
+    {
+        SimpleAsyncTaskExecutor simpleAsyncTaskExecutor = new SimpleAsyncTaskExecutor();
+        simpleAsyncTaskExecutor.setConcurrencyLimit(10); // 10 threads will process the data concurrently
+        return simpleAsyncTaskExecutor;
+    }
+```
+
