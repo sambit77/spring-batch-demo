@@ -17,3 +17,5 @@ This application demonstrates spring batch operation by reading a .csv file and 
 3. Define job using steps (Job will require JobRepository and PlatformTransactionManager.
 4. Define a JobRepository (also define datasource and initializers).
 5. Create a JobLauncher to launch the job (In this app its an api endpoint that triggers batch run).
+
+![Spring Batch Architecture](architecture.png)
